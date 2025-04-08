@@ -1,59 +1,81 @@
 variable "create" {
-  type = bool
+  description = "Controla si se deben crear los recursos"
+  type        = bool
 }
 
 variable "create_ecr" {
-  type = bool
+  description = "Controla si se deben crear los recursos"
+  type        = bool
 }
 
 variable "ecr_name" {
-  type = string
+  description = "Nombre del repositorio ECR"
+  type        = string
 }
+
 variable "namespace" {
-  type = string
+  description = "Prefijo común para nombrar recursos"
+  type        = string
 }
 
-variable "environment" {
-  type = string
-}
-
-variable "project" {
-  type = string
+variable "app_namespace" {
+  description = "Namespace de Kubernetes para las aplicaciones Fargate"
+  type        = string
+  default     = "default"
 }
 
 variable "vpc_id" {
-  type = string
+  description = "ID de la VPC"
+  type        = string
 }
 
 variable "subnet_ids" {
-  type = list(string)
+  description = "Lista de subnets para el EKS y el ALB"
+  type        = list(string)
 }
 
-variable "kubernetes_version" {
-  type = string
-}
-
-variable "enabled_cluster_log_types" {
-  type    = list(string)
-  default = []
-}
-
-variable "endpoint_private_access" {
-  type    = bool
-  default = false
-}
-
-variable "endpoint_public_access" {
-  type    = bool
-  default = true
+variable "allowed_ip" {
+  description = "IP pública autorizada para acceder al ALB (formato CIDR)"
+  type        = string
 }
 
 variable "public_access_cidrs" {
-  type    = list(string)
-  default = ["0.0.0.0/0"]
+  description = "CIDRs permitidos para acceso público al API server de EKS"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
+}
+
+variable "endpoint_private_access" {
+  description = "Habilitar acceso privado al API server"
+  type        = bool
+  default     = true
+}
+
+variable "endpoint_public_access" {
+  description = "Habilitar acceso público al API server"
+  type        = bool
+  default     = true
+}
+
+variable "kubernetes_version" {
+  description = "Versión de Kubernetes"
+  type        = string
+  default     = "1.28"
+}
+
+variable "enabled_cluster_log_types" {
+  description = "Tipos de logs habilitados para el cluster"
+  type        = list(string)
+  default     = ["api", "audit"]
+}
+
+variable "allowed_ip" {
+  description = "IP pública autorizada para acceder al ALB (formato CIDR)"
+  type        = string
 }
 
 variable "tags" {
-  type    = map(string)
-  default = {}
+  description = "Etiquetas comunes para los recursos"
+  type        = map(string)
+  default     = {}
 }
