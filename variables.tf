@@ -29,10 +29,16 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "subnet_ids" {
+variable "public_subnet_ids" {
   description = "Lista de subnets para el EKS y el ALB"
   type        = list(string)
 }
+
+variable "private_subnet_ids" {
+  description = "Lista de subnets para el EKS y el ALB"
+  type        = list(string)
+}
+
 
 variable "allowed_ip" {
   description = "IP pública autorizada para acceder al ALB (formato CIDR)"
@@ -67,11 +73,6 @@ variable "enabled_cluster_log_types" {
   description = "Tipos de logs habilitados para el cluster"
   type        = list(string)
   default     = ["api", "audit"]
-}
-
-variable "allowed_ip" {
-  description = "IP pública autorizada para acceder al ALB (formato CIDR)"
-  type        = string
 }
 
 variable "tags" {

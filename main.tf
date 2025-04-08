@@ -6,7 +6,7 @@ resource "aws_eks_cluster" "this" {
   enabled_cluster_log_types = var.enabled_cluster_log_types
 
   vpc_config {
-    subnet_ids              = var.subnet_ids
+    subnet_ids              = var.private_subnet_ids
     security_group_ids      = [aws_security_group.eks[0].id]
     endpoint_private_access = var.endpoint_private_access
     endpoint_public_access  = var.endpoint_public_access
@@ -49,7 +49,7 @@ resource "aws_lb" "grpc_alb" {
   internal                   = false
   load_balancer_type         = "application"
   security_groups            = [aws_security_group.eks[0].id]
-  subnets                    = var.subnet_ids
+  subnets                    = var.public_subnet_ids
   enable_deletion_protection = false
   tags = merge(var.tags, {
     Name = format("%s-grpc-alb", var.namespace)
@@ -135,7 +135,7 @@ resource "aws_eks_fargate_profile" "default" {
   cluster_name           = aws_eks_cluster.this[0].name
   fargate_profile_name   = format("%s-fargate", var.namespace)
   pod_execution_role_arn = aws_iam_role.fargate_execution_role[0].arn
-  subnet_ids             = var.subnet_ids
+  subnet_ids             = var.private_subnet_ids
 
   selector {
     namespace = var.app_namespace
@@ -157,7 +157,7 @@ resource "aws_eks_fargate_profile" "default" {
   cluster_name           = aws_eks_cluster.this[0].name
   fargate_profile_name   = format("%s-fargate", var.namespace)
   pod_execution_role_arn = aws_iam_role.fargate_execution_role[0].arn
-  subnet_ids             = var.subnet_ids
+  subnet_ids             = var.private_subnet_ids
 
   selector {
     namespace = var.app_namespace
@@ -168,9 +168,7 @@ resource "aws_eks_fargate_profile" "default" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.fargate_policy_attachment,
-    aws_iam_role_policy_attachment.ecr_access,
-    aws_iam_role_policy_attachment.secretsmanager_access
+    aws_iam_role_policy_attachment.fargate_policy_attachment
   ]
 }
 
