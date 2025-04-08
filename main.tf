@@ -96,7 +96,7 @@ resource "aws_eks_fargate_profile" "default" {
 }
 
 resource "aws_ecr_repository" "this" {
-  count = var.create ? 1 : 0
+  count = var.create_ecr ? 1 : 0
 
   name = var.ecr_name
 
