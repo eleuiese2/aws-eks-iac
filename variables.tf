@@ -79,3 +79,8 @@ variable "tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "fargate_additional_policy_arns" {
+  description = "ARNs de políticas adicionales para el perfil de Fargate"
+  type        = list(string)
+}

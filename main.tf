@@ -124,10 +124,10 @@ resource "aws_iam_role" "fargate_execution_role" {
   tags = var.tags
 }
 
-resource "aws_iam_role_policy_attachment" "fargate_policy_attachment" {
-  count      = var.create ? 1 : 0
+resource "aws_iam_role_policy_attachment" "custom_fargate_policies" {
+  for_each   = var.create ? toset(var.fargate_additional_policy_arns) : toset([])
   role       = aws_iam_role.fargate_execution_role[0].name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
+  policy_arn = each.value
 }
 
 resource "aws_eks_fargate_profile" "default" {
@@ -145,7 +145,33 @@ resource "aws_eks_fargate_profile" "default" {
     namespace = "kube-system"
   }
 
-  depends_on = [aws_iam_role_policy_attachment.fargate_policy_attachment]
+  depends_on = [
+    aws_iam_role_policy_attachment.fargate_policy_attachment,
+    aws_iam_role_policy_attachment.custom_fargate_policies
+  ]
+}
+
+
+resource "aws_eks_fargate_profile" "default" {
+  count                  = var.create ? 1 : 0
+  cluster_name           = aws_eks_cluster.this[0].name
+  fargate_profile_name   = format("%s-fargate", var.namespace)
+  pod_execution_role_arn = aws_iam_role.fargate_execution_role[0].arn
+  subnet_ids             = var.subnet_ids
+
+  selector {
+    namespace = var.app_namespace
+  }
+
+  selector {
+    namespace = "kube-system"
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.fargate_policy_attachment,
+    aws_iam_role_policy_attachment.ecr_access,
+    aws_iam_role_policy_attachment.secretsmanager_access
+  ]
 }
 
 resource "aws_iam_role" "alb_controller" {
@@ -169,6 +195,7 @@ resource "aws_iam_role_policy_attachment" "alb_controller_policy" {
   policy_arn = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
   role       = aws_iam_role.alb_controller[0].name
 }
+
 
 
 resource "aws_ecr_repository" "this" {
