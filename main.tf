@@ -146,7 +146,6 @@ resource "aws_eks_fargate_profile" "default" {
   }
 
   depends_on = [
-    aws_iam_role_policy_attachment.fargate_policy_attachment,
     aws_iam_role_policy_attachment.custom_fargate_policies
   ]
 }
