@@ -48,7 +48,7 @@ resource "aws_lb" "grpc_alb" {
   name                       = format("%s-grpc-alb", var.namespace)
   internal                   = false
   load_balancer_type         = "application"
-  security_groups            = [aws_security_group.eks[0].id]
+  security_groups            = [aws_security_group.alb[0].id]
   subnets                    = var.public_subnet_ids
   enable_deletion_protection = false
   tags = merge(var.tags, {
@@ -69,6 +69,31 @@ resource "aws_lb_target_group" "grpc_tg" {
   }
   tags = merge(var.tags, {
     Name = format("%s-grpc-tg", var.namespace)
+  })
+}
+
+resource "aws_security_group" "alb" {
+  count       = var.create ? 1 : 0
+  name        = format("%s-eks-alb-sg", var.namespace)
+  description = "ALB security group"
+  vpc_id      = var.vpc_id
+
+  ingress {
+    from_port   = 50051
+    to_port     = 50051
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(var.tags, {
+    Name = format("%s-eks-sg", var.namespace)
   })
 }
 
