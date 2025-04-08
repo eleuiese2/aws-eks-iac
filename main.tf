@@ -6,7 +6,7 @@ resource "aws_eks_cluster" "this" {
   enabled_cluster_log_types = var.enabled_cluster_log_types
 
   vpc_config {
-    subnet_ids              = var.subnet_ids
+    subnet_ids              = var.private_subnet_ids
     security_group_ids      = [aws_security_group.eks[0].id]
     endpoint_private_access = var.endpoint_private_access
     endpoint_public_access  = var.endpoint_public_access
@@ -49,7 +49,7 @@ resource "aws_lb" "grpc_alb" {
   internal                   = false
   load_balancer_type         = "application"
   security_groups            = [aws_security_group.eks[0].id]
-  subnets                    = var.subnet_ids
+  subnets                    = var.public_subnet_ids
   enable_deletion_protection = false
   tags = merge(var.tags, {
     Name = format("%s-grpc-alb", var.namespace)
@@ -124,10 +124,10 @@ resource "aws_iam_role" "fargate_execution_role" {
   tags = var.tags
 }
 
-resource "aws_iam_role_policy_attachment" "fargate_policy_attachment" {
-  count      = var.create ? 1 : 0
+resource "aws_iam_role_policy_attachment" "custom_fargate_policies" {
+  for_each   = var.create ? toset(var.fargate_additional_policy_arns) : toset([])
   role       = aws_iam_role.fargate_execution_role[0].name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSFargatePodExecutionRolePolicy"
+  policy_arn = each.value
 }
 
 resource "aws_eks_fargate_profile" "default" {
@@ -135,7 +135,7 @@ resource "aws_eks_fargate_profile" "default" {
   cluster_name           = aws_eks_cluster.this[0].name
   fargate_profile_name   = format("%s-fargate", var.namespace)
   pod_execution_role_arn = aws_iam_role.fargate_execution_role[0].arn
-  subnet_ids             = var.subnet_ids
+  subnet_ids             = var.private_subnet_ids
 
   selector {
     namespace = var.app_namespace
@@ -145,7 +145,31 @@ resource "aws_eks_fargate_profile" "default" {
     namespace = "kube-system"
   }
 
-  depends_on = [aws_iam_role_policy_attachment.fargate_policy_attachment]
+  depends_on = [
+    aws_iam_role_policy_attachment.fargate_policy_attachment,
+    aws_iam_role_policy_attachment.custom_fargate_policies
+  ]
+}
+
+
+resource "aws_eks_fargate_profile" "default" {
+  count                  = var.create ? 1 : 0
+  cluster_name           = aws_eks_cluster.this[0].name
+  fargate_profile_name   = format("%s-fargate", var.namespace)
+  pod_execution_role_arn = aws_iam_role.fargate_execution_role[0].arn
+  subnet_ids             = var.private_subnet_ids
+
+  selector {
+    namespace = var.app_namespace
+  }
+
+  selector {
+    namespace = "kube-system"
+  }
+
+  depends_on = [
+    aws_iam_role_policy_attachment.fargate_policy_attachment
+  ]
 }
 
 resource "aws_iam_role" "alb_controller" {
@@ -169,6 +193,7 @@ resource "aws_iam_role_policy_attachment" "alb_controller_policy" {
   policy_arn = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
   role       = aws_iam_role.alb_controller[0].name
 }
+
 
 
 resource "aws_ecr_repository" "this" {

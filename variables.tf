@@ -29,10 +29,16 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "subnet_ids" {
+variable "public_subnet_ids" {
   description = "Lista de subnets para el EKS y el ALB"
   type        = list(string)
 }
+
+variable "private_subnet_ids" {
+  description = "Lista de subnets para el EKS y el ALB"
+  type        = list(string)
+}
+
 
 variable "allowed_ip" {
   description = "IP pública autorizada para acceder al ALB (formato CIDR)"
@@ -69,13 +75,13 @@ variable "enabled_cluster_log_types" {
   default     = ["api", "audit"]
 }
 
-variable "allowed_ip" {
-  description = "IP pública autorizada para acceder al ALB (formato CIDR)"
-  type        = string
-}
-
 variable "tags" {
   description = "Etiquetas comunes para los recursos"
   type        = map(string)
   default     = {}
+}
+
+variable "fargate_additional_policy_arns" {
+  description = "ARNs de políticas adicionales para el perfil de Fargate"
+  type        = list(string)
 }
