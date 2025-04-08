@@ -151,27 +151,6 @@ resource "aws_eks_fargate_profile" "default" {
   ]
 }
 
-
-resource "aws_eks_fargate_profile" "default" {
-  count                  = var.create ? 1 : 0
-  cluster_name           = aws_eks_cluster.this[0].name
-  fargate_profile_name   = format("%s-fargate", var.namespace)
-  pod_execution_role_arn = aws_iam_role.fargate_execution_role[0].arn
-  subnet_ids             = var.private_subnet_ids
-
-  selector {
-    namespace = var.app_namespace
-  }
-
-  selector {
-    namespace = "kube-system"
-  }
-
-  depends_on = [
-    aws_iam_role_policy_attachment.fargate_policy_attachment
-  ]
-}
-
 resource "aws_iam_role" "alb_controller" {
   count = var.create ? 1 : 0
   name  = format("%s-alb-controller", var.namespace)
