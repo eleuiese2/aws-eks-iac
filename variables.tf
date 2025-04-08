@@ -10,7 +10,7 @@ variable "create_ecr" {
 
 variable "ecr_name" {
   description = "Nombre del repositorio ECR"
-  type        = string
+  type        = list(string)
 }
 
 variable "namespace" {
@@ -84,4 +84,11 @@ variable "tags" {
 variable "fargate_additional_policy_arns" {
   description = "ARNs de políticas adicionales para el perfil de Fargate"
   type        = list(string)
+}
+
+variable "scan_on_push" {
+  description = "Habilitar escaneo de imágenes al subir a ECR"
+  type        = bool
+  default     = true
+
 }

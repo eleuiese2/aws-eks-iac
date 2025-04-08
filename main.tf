@@ -207,12 +207,12 @@ resource "aws_iam_role_policy_attachment" "alb_controller_policy" {
 
 
 resource "aws_ecr_repository" "this" {
-  count = var.create_ecr ? 1 : 0
+  count = var.create_ecr ? length(var.ecr_name) : 0
 
-  name = var.ecr_name
+  name = var.ecr_name[count.index]
 
   image_scanning_configuration {
-    scan_on_push = true
+    scan_on_push = var.scan_on_push
   }
 
   tags = var.tags
