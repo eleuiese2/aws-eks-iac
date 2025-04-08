@@ -1,6 +1,14 @@
 variable "create" {
   type = bool
 }
+
+variable "create_ecr" {
+  type = bool
+}
+
+variable "ecr_name" {
+  type = string
+}
 variable "namespace" {
   type = string
 }

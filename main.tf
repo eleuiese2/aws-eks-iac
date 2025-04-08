@@ -94,3 +94,15 @@ resource "aws_eks_fargate_profile" "default" {
 
   depends_on = [aws_iam_role_policy_attachment.fargate_policy_attachment]
 }
+
+resource "aws_ecr_repository" "this" {
+  count = var.create_ecr ? 1 : 0
+
+  name = var.ecr_name
+
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = var.tags
+}
