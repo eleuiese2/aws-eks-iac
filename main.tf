@@ -138,7 +138,7 @@ resource "aws_eks_fargate_profile" "default" {
   subnet_ids             = var.private_subnet_ids
 
   selector {
-    namespace = var.app_namespace
+    namespace = var.namespace
   }
 
   selector {
