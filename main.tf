@@ -25,10 +25,10 @@ resource "aws_security_group" "eks" {
   vpc_id      = var.vpc_id
 
   ingress {
-    from_port   = 50051
-    to_port     = 50051
+    from_port   = 0
+    to_port     = 65535
     protocol    = "tcp"
-    cidr_blocks = [var.allowed_ip]
+    cidr_blocks = [var.allowed_ip, "10.0.0.0/16"]
   }
 
   egress {
@@ -40,22 +40,6 @@ resource "aws_security_group" "eks" {
 
   tags = merge(var.tags, {
     Name = format("%s-eks-sg", var.namespace)
-  })
-}
-
-resource "aws_lb_target_group" "grpc_tg" {
-  count    = var.create ? 1 : 0
-  name     = format("%s-grpc-tg", var.namespace)
-  port     = 50051
-  protocol = "HTTP"
-  vpc_id   = var.vpc_id
-  health_check {
-    protocol = "HTTP"
-    path     = "/"
-    matcher  = "200"
-  }
-  tags = merge(var.tags, {
-    Name = format("%s-grpc-tg", var.namespace)
   })
 }
 
